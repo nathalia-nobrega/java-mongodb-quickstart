@@ -14,7 +14,7 @@ import static com.mongodb.client.model.Updates.set;
 
 public class Connection {
     public static void main(String[] args) {
-        final String connString = "mongodb+srv://twitch:umruJuosakcIxqVg@twitchcluster.tbsnotd.mongodb.net/?retryWrites=true&w=majority;";
+        final String connString = "";
         connectToDatabase(connString);
     }
 
