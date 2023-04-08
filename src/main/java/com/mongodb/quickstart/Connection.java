@@ -14,12 +14,12 @@ import static com.mongodb.client.model.Updates.set;
 
 public class Connection {
     public static void main(String[] args) {
-        final String connString = "";
-        connectToDatabase(connString);
+        String mongodb_uri = System.getProperty("MONGODB_URI");
+        connectToDatabase(mongodb_uri);
     }
 
-    private static void connectToDatabase(String connString) {
-        try (MongoClient mongoClient = MongoClients.create(connString)) {
+    private static void connectToDatabase(String mongodb_uri) {
+        try (MongoClient mongoClient = MongoClients.create(mongodb_uri)) {
             MongoCollection<Document> cookies = mongoClient.getDatabase("christmas").getCollection("cookies");
 
             // crud operations
