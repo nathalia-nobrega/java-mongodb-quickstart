@@ -12,9 +12,9 @@ import java.util.Random;
 
 import static com.mongodb.client.model.Updates.set;
 
-public class Connection {
+public class Crud {
     public static void main(String[] args) {
-        String mongodb_uri = System.getProperty("MONGODB_URI");
+        final String mongodb_uri = "mongodb://localhost:27017";
         connectToDatabase(mongodb_uri);
     }
 
