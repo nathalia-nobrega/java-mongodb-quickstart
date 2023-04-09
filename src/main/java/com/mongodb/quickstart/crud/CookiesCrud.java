@@ -1,4 +1,4 @@
-package com.mongodb.quickstart;
+package com.mongodb.quickstart.crud;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -6,16 +6,30 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import org.bson.Document;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 
 import static com.mongodb.client.model.Updates.set;
 
-public class Crud {
+public class CookiesCrud {
     public static void main(String[] args) {
-        final String mongodb_uri = "mongodb://localhost:27017";
-        connectToDatabase(mongodb_uri);
+        connectToCluster();
+    }
+
+    private static void connectToCluster() {
+        try (InputStream in = new FileInputStream("src/main/resources/application.properties")) {
+            Properties props = new Properties();
+            props.load(in);
+            String uri = props.getProperty("mongodb.uri");
+            connectToDatabase(uri);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private static void connectToDatabase(String mongodb_uri) {
