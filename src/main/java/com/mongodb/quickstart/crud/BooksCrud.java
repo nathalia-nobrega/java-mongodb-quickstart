@@ -23,55 +23,19 @@ public class BooksCrud {
         connectToCluster();
     }
 
-    private static void connectToCluster() {
-        try (InputStream in = new FileInputStream("src/main/resources/application.properties")) {
-            Properties props = new Properties();
-            props.load(in);
-            String connectionURI = props.getProperty("mongodb.uri");
-            connectToDatabase(connectionURI);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void connectToDatabase(String connectionURI) {
-        try (MongoClient client = MongoClients.create(connectionURI)) {
-            MongoCollection<Document> books = client.getDatabase("Bookshop").getCollection("Books");
-            System.out.println("------ Before updating ------\n");
-            deleteDocuments(books);
-            createDocuments(books);
-            readDocuments(books);
-            updateDocuments(books);
-
-        }
-    }
-
-    private static void updateDocuments(MongoCollection<Document> books) {
-        // Updating the number of pages of The Trial...
-        Document first = books.find(eq("name", "The Trial")).first();
-        Bson update = set("pages", 310);
-        if (first != null) {
-            books.updateOne(first, update);
-        } else System.out.println("The query didn't find a result: book not present");
-
-        // Adding a new field called isAvailable and assigning a value to it...
-        List<Document> docs = books.find().into(new ArrayList<>());
-        docs.forEach(document -> books.updateOne(document, set("isAvailable", new Random().nextBoolean())));
-
-        // Adding a new field called yearOfRelease and assigning a value to it...
-        docs.forEach(document -> books.updateMany(document, set("yearOfRelease", new Random().nextInt(1810, 1925))));
-
-        // Adding a new field called distributors and assigning multiple values to it...
-        List<String> distributors = List.of("ProsePlanet", "SwiftReads", "CoverConnect", "Inklinkers", "Papertrailers", "PublishingGrade", "Inkbounds");
-
-        docs.forEach(document -> books.updateMany(document, set("distributors", distributors.subList(0, new Random().nextInt(distributors.size())).stream().limit(3).toList())));
-
-        System.out.println("------ After updating ------\n");
-        System.out.println("\nBooks that are available in the stock: ");
-    }
-
-    private static void deleteDocuments(MongoCollection<Document> books) {
-        books.deleteMany(new Document());
+    private static void createDocuments(MongoCollection<Document> books) {
+        List<Document> bookList = books.find().into(new ArrayList<>());
+        bookList.addAll(List.of(
+                new Document("name", "The Catcher In The Rye")
+                        .append("pages", 200)
+                        .append("author", "J.D Salinger"),
+                new Document("name", "The Trial")
+                        .append("pages", 305)
+                        .append("author", "Franz Kafka"),
+                new Document("name", "Notes from the Undergroud")
+                        .append("pages", 191)
+                        .append("author", "Fyodor Dostoevsky")));
+        books.insertMany(bookList);
     }
 
     private static void readDocuments(MongoCollection<Document> books) {
@@ -97,18 +61,60 @@ public class BooksCrud {
         }
     }
 
-    private static void createDocuments(MongoCollection<Document> books) {
-        List<Document> bookList = books.find().into(new ArrayList<>());
-        bookList.addAll(List.of(
-                new Document("name", "The Catcher In The Rye")
-                        .append("pages", 200)
-                        .append("author", "J.D Salinger"),
-                new Document("name", "The Trial")
-                        .append("pages", 305)
-                        .append("author", "Franz Kafka"),
-                new Document("name", "Notes from the Undergroud")
-                        .append("pages", 191)
-                        .append("author", "Fyodor Dostoevsky")));
-        books.insertMany(bookList);
+    private static void updateDocuments(MongoCollection<Document> books) {
+        // Updating the number of pages of The Trial...
+        Document first = books.find(eq("name", "The Trial")).first();
+        Bson update = set("pages", 310);
+        if (first != null) {
+            books.updateOne(first, update);
+        } else System.out.println("The query didn't find a result: book not present");
+
+        // Adding a new field called isAvailable and assigning a value to it...
+        List<Document> docs = books.find().into(new ArrayList<>());
+        docs.forEach(document -> books.updateOne(document, set("isAvailable", new Random().nextBoolean())));
+
+        // Adding a new field called yearOfRelease and assigning a value to it...
+        docs.forEach(document -> books.updateMany(document, set("yearOfRelease", new Random().nextInt(1810, 1925))));
+
+        // Adding a new field called distributors and assigning multiple values to it...
+        List<String> distributors = List.of("ProsePlanet", "SwiftReads", "CoverConnect", "Inklinkers", "Papertrailers", "PublishingGrade", "Inkbounds");
+
+        docs.forEach(document -> {
+            List<String> value = distributors.subList(0, new Random().nextInt(distributors.size())).stream().limit(3).toList();
+            books.updateMany(document, set("distributors", value));
+        });
+
+        System.out.println("\n------ After updating ------\n");
+        readDocuments(books);
     }
+
+    private static void deleteDocuments(MongoCollection<Document> books) {
+        books.deleteMany(new Document());
+    }
+
+    private static void connectToCluster() {
+        try (InputStream in = new FileInputStream("src/main/resources/application.properties")) {
+            Properties props = new Properties();
+            props.load(in);
+            String connectionURI = props.getProperty("mongodb.uri");
+            connectToDatabase(connectionURI);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void connectToDatabase(String connectionURI) {
+        try (MongoClient client = MongoClients.create(connectionURI)) {
+            MongoCollection<Document> books = client.getDatabase("Bookshop").getCollection("Books");
+
+            System.out.println("------ Before updating ------\n");
+            deleteDocuments(books);
+            createDocuments(books);
+            readDocuments(books);
+            updateDocuments(books);
+
+        }
+    }
+
+
 }
